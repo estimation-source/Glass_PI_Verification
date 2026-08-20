@@ -32,7 +32,7 @@ def get_base64_image(image_path: str) -> str | None:
 logo_b64 = get_base64_image("logo.png")
 
 # ============================================================
-# CUSTOM CLEAN UI CSS & BUTTON STYLING (FIXED EXACT LOOK)
+# CUSTOM CLEAN UI CSS & UNBOLD BUTTON STYLING
 # ============================================================
 st.markdown("""
     <style>
@@ -65,7 +65,7 @@ st.markdown("""
     .main-subtitle {
         color: #64748b !important;
         font-size: 13px !important;
-        font-weight: 500 !important;
+        font-weight: 400 !important;
         margin: 0 !important;
     }
 
@@ -81,7 +81,7 @@ st.markdown("""
         gap: 8px;
     }
 
-    /* FORCE BLUE BUTTON (PRIMARY TYPE) */
+    /* FORCE BLUE BUTTON (PRIMARY TYPE) - UNBOLD TEXT */
     .stButton > button[kind="primary"] {
         background-color: #2563eb !important;
         background: #2563eb !important;
@@ -92,15 +92,15 @@ st.markdown("""
         padding: 0 18px !important;
         box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
         white-space: nowrap !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
+        font-weight: 400 !important; /* UNBOLD */
+        font-size: 13.5px !important;
     }
     .stButton > button[kind="primary"]:hover {
         background-color: #1d4ed8 !important;
         background: #1d4ed8 !important;
     }
 
-    /* FORCE RED BUTTON (SECONDARY TYPE OVERRIDE) */
+    /* FORCE RED BUTTON (SECONDARY TYPE OVERRIDE) - UNBOLD TEXT */
     .stButton > button[kind="secondary"] {
         background-color: #ef4444 !important;
         background: #ef4444 !important;
@@ -111,8 +111,8 @@ st.markdown("""
         padding: 0 18px !important;
         box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2) !important;
         white-space: nowrap !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
+        font-weight: 400 !important; /* UNBOLD */
+        font-size: 13.5px !important;
     }
     .stButton > button[kind="secondary"]:hover {
         background-color: #dc2626 !important;
@@ -121,25 +121,25 @@ st.markdown("""
 
     .stButton > button p, .stButton > button span {
         color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
+        font-weight: 400 !important; /* UNBOLD INTERNAL SPAN */
+        font-size: 13.5px !important;
     }
 
-    /* SIDEBAR CURVED LOGO CARD STYLING */
+    /* EXACT MATCH SIDEBAR LOGO CONTAINER */
     .sidebar-logo-card {
         background: #ffffff;
-        border-radius: 14px;
-        padding: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        padding: 16px 20px;
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         border: 1px solid #e2e8f0;
     }
 
     .sidebar-logo-img {
-        width: 120px;
+        width: 100%;
+        max-width: 120px;
         height: auto;
         object-fit: contain;
     }
@@ -220,7 +220,6 @@ uploaded_excel_files = st.file_uploader(
 
 st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
 
-# INLINE BUTTONS LAYOUT
 col_ex1, col_ex2, _ = st.columns([0.18, 0.14, 0.68])
 
 with col_ex1:
@@ -268,7 +267,6 @@ uploaded_pdf_files = st.file_uploader(
 
 st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
 
-# INLINE BUTTONS LAYOUT
 col_pdf1, col_pdf2, _ = st.columns([0.18, 0.14, 0.68])
 
 with col_pdf1:
@@ -326,15 +324,17 @@ pdf_ready = "pdf_df" in st.session_state and not st.session_state["pdf_df"].empt
 if not excel_ready or not pdf_ready:
     st.info("💡 Please extract data from Step 1 (Excel) and Step 2 (PDF) first.")
 else:
-    col_v1, _ = st.columns([0.22, 0.78])
+    col_v1, _ = st.columns([0.18, 0.82])
     with col_v1:
-        if st.button("⚡ Run Verification", type="primary", use_container_width=True):
-            with st.spinner("Matching and Verifying Data..."):
-                v_df = verify_pi_against_excel(
-                    st.session_state["excel_df"], 
-                    st.session_state["pdf_df"]
-                )
-                st.session_state["verification_df"] = v_df
+        btn_verify = st.button("⚡ Run Verification", type="primary", use_container_width=True)
+    
+    if btn_verify:
+        with st.spinner("Matching and Verifying Data..."):
+            v_df = verify_pi_against_excel(
+                st.session_state["excel_df"], 
+                st.session_state["pdf_df"]
+            )
+            st.session_state["verification_df"] = v_df
 
 # ============================================================
 # VERIFICATION SUMMARY & ANALYTICS DASHBOARD
