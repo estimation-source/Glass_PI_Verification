@@ -32,7 +32,7 @@ def get_base64_image(image_path: str) -> str | None:
 logo_b64 = get_base64_image("logo.png")
 
 # ============================================================
-# EXACT CSS MATCHING REQUIREMENT SHEET ENGINE
+# CUSTOM CLEAN UI CSS & BUTTON STYLING (FIXED EXACT LOOK)
 # ============================================================
 st.markdown("""
     <style>
@@ -44,13 +44,13 @@ st.markdown("""
         color: #0f172a !important;
     }
 
-    /* Header Container */
+    /* Top White Header Container */
     .header-container {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 32px 36px;
-        margin-bottom: 28px;
+        padding: 30px 36px;
+        margin-bottom: 24px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
@@ -69,7 +69,7 @@ st.markdown("""
         margin: 0 !important;
     }
 
-    /* Step Heading */
+    /* Step Titles */
     .step-heading {
         color: #0f172a;
         font-size: 15px !important;
@@ -81,33 +81,42 @@ st.markdown("""
         gap: 8px;
     }
 
-    /* BUTTONS STYLING MATCHING REQUIREMENT ENGINE */
-    .stButton > button {
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
-        height: 40px !important;
-        padding: 0 18px !important;
-        border: none !important;
-        white-space: nowrap !important;
-    }
-
-    /* PRIMARY BLUE BUTTON */
+    /* FORCE BLUE BUTTON (PRIMARY TYPE) */
     .stButton > button[kind="primary"] {
         background-color: #2563eb !important;
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
         color: #ffffff !important;
+        border-radius: 8px !important;
+        height: 40px !important;
+        padding: 0 18px !important;
+        box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
+        white-space: nowrap !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     }
     .stButton > button[kind="primary"]:hover {
         background-color: #1d4ed8 !important;
+        background: #1d4ed8 !important;
     }
 
-    /* SECONDARY RED BUTTON */
+    /* FORCE RED BUTTON (SECONDARY TYPE OVERRIDE) */
     .stButton > button[kind="secondary"] {
         background-color: #ef4444 !important;
+        background: #ef4444 !important;
+        border: 1px solid #ef4444 !important;
         color: #ffffff !important;
+        border-radius: 8px !important;
+        height: 40px !important;
+        padding: 0 18px !important;
+        box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2) !important;
+        white-space: nowrap !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
     }
     .stButton > button[kind="secondary"]:hover {
         background-color: #dc2626 !important;
+        background: #dc2626 !important;
     }
 
     .stButton > button p, .stButton > button span {
@@ -116,17 +125,17 @@ st.markdown("""
         font-size: 13px !important;
     }
 
-    /* SIDEBAR LOGO CARD (EXACT SCREENSHOT MATCH) */
+    /* SIDEBAR CURVED LOGO CARD STYLING */
     .sidebar-logo-card {
         background: #ffffff;
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 20px;
-        border: 1px solid #f1f5f9;
+        border: 1px solid #e2e8f0;
     }
 
     .sidebar-logo-img {
@@ -180,9 +189,9 @@ with st.sidebar:
     st.markdown('<div class="guide-title">💡 Quick Guide</div>', unsafe_allow_html=True)
     st.markdown("""
         <div class="guide-step"><b>1.</b> Upload Excel BOQ file(s) in Step 1.</div>
-        <div class="guide-step"><b>2.</b> Click on <b>Extract Excel Data</b>.</div>
+        <div class="guide-step"><b>2.</b> Click <b>Extract Excel Data</b>.</div>
         <div class="guide-step"><b>3.</b> Upload PI PDF file(s) in Step 2.</div>
-        <div class="guide-step"><b>4.</b> Click on <b>Extract PDF Data</b>.</div>
+        <div class="guide-step"><b>4.</b> Click <b>Extract PDF Data</b>.</div>
         <div class="guide-step"><b>5.</b> Run <b>Verify Data</b> to view mismatch analytics.</div>
     """, unsafe_allow_html=True)
 
@@ -192,7 +201,7 @@ with st.sidebar:
 st.markdown("""
     <div class="header-container">
         <div class="main-title">Glass PI Verification System</div>
-        <div class="main-subtitle">Automated BOQ vs PI Data Matching & Reconciliation Engine</div>
+        <div class="main-subtitle">Automated BOQ vs PI Data Matching & Reconciliation</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -211,14 +220,14 @@ uploaded_excel_files = st.file_uploader(
 
 st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
 
-# INLINE BUTTONS LAYOUT (SAME AS SCREENSHOT)
+# INLINE BUTTONS LAYOUT
 col_ex1, col_ex2, _ = st.columns([0.18, 0.14, 0.68])
 
 with col_ex1:
-    btn_extract_ex = st.button("🔗 Merge & Process Files", type="primary", use_container_width=True)
+    btn_extract_ex = st.button("🔗 Extract Excel Data", type="primary", use_container_width=True)
 
 with col_ex2:
-    btn_reset_ex = st.button("🗑️ Reset Data", type="secondary", use_container_width=True)
+    btn_reset_ex = st.button("🗑️ Reset Excel", type="secondary", use_container_width=True)
 
 if btn_extract_ex:
     if uploaded_excel_files:
@@ -259,14 +268,14 @@ uploaded_pdf_files = st.file_uploader(
 
 st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
 
-# INLINE BUTTONS LAYOUT (SAME AS SCREENSHOT)
+# INLINE BUTTONS LAYOUT
 col_pdf1, col_pdf2, _ = st.columns([0.18, 0.14, 0.68])
 
 with col_pdf1:
     btn_extract_pdf = st.button("🔍 Extract PDF Data", type="primary", use_container_width=True)
 
 with col_pdf2:
-    btn_reset_pdf = st.button("🗑️ Reset Data", type="secondary", use_container_width=True)
+    btn_reset_pdf = st.button("🗑️ Reset PDF", type="secondary", use_container_width=True)
 
 if btn_extract_pdf:
     if uploaded_pdf_files:
