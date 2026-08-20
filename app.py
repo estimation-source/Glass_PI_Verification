@@ -117,11 +117,19 @@ st.markdown("""
         font-size: 14px !important;
     }
 
-    /* Sidebar Logo & Quick Guide */
+    /* SIDEBAR LOGO CONTAINER & ADJUSTMENTS */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px 0 15px 0;
+        width: 100%;
+    }
+
     .sidebar-logo {
-        width: 120px;
+        width: 110px;
+        max-width: 100%;
         height: auto;
-        margin-bottom: 15px;
         object-fit: contain;
     }
 
@@ -155,9 +163,16 @@ if "pdf_uploader_key" not in st.session_state:
 # ============================================================
 with st.sidebar:
     if logo_b64:
-        st.markdown(f'<img src="data:image/png;base64,{logo_b64}" class="sidebar-logo">', unsafe_allow_html=True)
+        st.markdown(
+            f'''
+            <div class="logo-container">
+                <img src="data:image/png;base64,{logo_b64}" class="sidebar-logo">
+            </div>
+            ''', 
+            unsafe_allow_html=True
+        )
     else:
-        st.markdown("<h2 style='color:#0f172a; font-weight:800;'>win square</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color:#0f172a; font-weight:800; margin-bottom: 15px;'>win square</h2>", unsafe_allow_html=True)
     
     st.divider()
     st.markdown('<div class="guide-title">💡 Quick Guide</div>', unsafe_allow_html=True)
