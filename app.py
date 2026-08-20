@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from PIL import Image
 
 # Root directory path जोडण्यासाठी
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -12,157 +13,59 @@ from src.excel_reader import process_uploaded_files
 from src.pdf_reader import read_pdf
 from verifier import verify_pi_against_excel
 
-# Page Configuration
+# ============================================================
+# 1. STREAMLIT PAGE CONFIG
+# ============================================================
 st.set_page_config(
-    page_title="Glass PI Verification System",
+    page_title="WIN-SQUARE | Glass PI Verification System",
     page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ============================================================
-# BASE64 LOGO HELPER FUNCTION
-# ============================================================
-def get_base64_image(image_path: str) -> str | None:
-    if os.path.exists(image_path):
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    return None
-
-logo_b64 = get_base64_image("logo.png")
-
-# ============================================================
-# CUSTOM CLEAN UI CSS & UNBOLD BUTTON STYLING
+# 2. FIX CSS: Header चालू ठेवून Sidebar Toggle Button Visible ठेवणे
 # ============================================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        background-color: #f8fafc !important;
-        color: #0f172a !important;
+    header[data-testid="stHeader"] {
+        z-index: 99999 !important;
+        background: transparent !important;
     }
 
-    /* Top White Header Container */
-    .header-container {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 30px 36px;
-        margin-bottom: 24px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    }
-
-    .main-title {
-        color: #0f172a !important;
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        margin: 0 0 6px 0 !important;
-        letter-spacing: -0.2px;
-    }
-
-    .main-subtitle {
-        color: #64748b !important;
-        font-size: 13px !important;
-        font-weight: 400 !important;
-        margin: 0 !important;
-    }
-
-    /* Step Titles */
-    .step-heading {
-        color: #0f172a;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        margin-top: 10px;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* FORCE BLUE BUTTON (PRIMARY TYPE) - UNBOLD TEXT */
-    .stButton > button[kind="primary"] {
-        background-color: #2563eb !important;
-        background: #2563eb !important;
-        border: 1px solid #2563eb !important;
-        color: #ffffff !important;
+    button[data-testid="stSidebarCollapsedControl"],
+    button[data-testid="stSidebarNavCollapseButton"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        background-color: #FF4B4B !important;
+        color: white !important;
         border-radius: 8px !important;
-        height: 40px !important;
-        padding: 0 18px !important;
-        box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
-        white-space: nowrap !important;
-        font-weight: 400 !important; /* UNBOLD */
-        font-size: 13.5px !important;
-    }
-    .stButton > button[kind="primary"]:hover {
-        background-color: #1d4ed8 !important;
-        background: #1d4ed8 !important;
+        position: fixed !important;
+        top: 12px !important;
+        left: 12px !important;
+        z-index: 999999 !important;
+        box-shadow: 0px 3px 8px rgba(0,0,0,0.3) !important;
     }
 
-    /* FORCE RED BUTTON (SECONDARY TYPE OVERRIDE) - UNBOLD TEXT */
-    .stButton > button[kind="secondary"] {
-        background-color: #ef4444 !important;
-        background: #ef4444 !important;
-        border: 1px solid #ef4444 !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-        height: 40px !important;
-        padding: 0 18px !important;
-        box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2) !important;
-        white-space: nowrap !important;
-        font-weight: 400 !important; /* UNBOLD */
-        font-size: 13.5px !important;
-    }
-    .stButton > button[kind="secondary"]:hover {
-        background-color: #dc2626 !important;
-        background: #dc2626 !important;
+    button[data-testid="stSidebarCollapsedControl"] svg,
+    button[data-testid="stSidebarNavCollapseButton"] svg {
+        fill: white !important;
+        color: white !important;
+        width: 22px !important;
+        height: 22px !important;
     }
 
-    .stButton > button p, .stButton > button span {
-        color: #ffffff !important;
-        font-weight: 400 !important; /* UNBOLD INTERNAL SPAN */
-        font-size: 13.5px !important;
+    [data-testid="stStatusWidget"],
+    #MainMenu, 
+    footer {
+        display: none !important;
+        visibility: hidden !important;
     }
-
-    /* EXACT MATCH SIDEBAR LOGO CONTAINER */
-    .sidebar-logo-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 16px 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 24px;
-        border: 1px solid #e2e8f0;
-    }
-
-    .sidebar-logo-img {
-        width: 100%;
-        max-width: 120px;
-        height: auto;
-        object-fit: contain;
-    }
-
-    .guide-title {
-        font-size: 13px;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 12px;
-    }
-
-    .guide-step {
-        font-size: 12px;
-        color: #475569;
-        line-height: 1.65;
-        margin-bottom: 10px;
-    }
-
-    [data-testid="stHeader"] { display: none; }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State Keys
+# State Management Initialization
 if "excel_uploader_key" not in st.session_state:
     st.session_state["excel_uploader_key"] = 0
 
@@ -170,45 +73,172 @@ if "pdf_uploader_key" not in st.session_state:
     st.session_state["pdf_uploader_key"] = 0
 
 # ============================================================
-# SIDEBAR (LOGO & QUICK GUIDE)
+# 3. UI LAYOUT, FONTS & EXACT BUTTON CSS
 # ============================================================
-with st.sidebar:
-    if logo_b64:
-        st.markdown(
-            f'''
-            <div class="sidebar-logo-card">
-                <img src="data:image/png;base64,{logo_b64}" class="sidebar-logo-img">
-            </div>
-            ''', 
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown("<h3 style='color:#0f172a; font-weight:800; margin-bottom: 20px;'>win square</h3>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    st.divider()
-    st.markdown('<div class="guide-title">💡 Quick Guide</div>', unsafe_allow_html=True)
-    st.markdown("""
-        <div class="guide-step"><b>1.</b> Upload Excel BOQ file(s) in Step 1.</div>
-        <div class="guide-step"><b>2.</b> Click <b>Extract Excel Data</b>.</div>
-        <div class="guide-step"><b>3.</b> Upload PI PDF file(s) in Step 2.</div>
-        <div class="guide-step"><b>4.</b> Click <b>Extract PDF Data</b>.</div>
-        <div class="guide-step"><b>5.</b> Run <b>Verify Data</b> to view mismatch analytics.</div>
-    """, unsafe_allow_html=True)
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f6f9;
+        color: #334155;
+    }
 
-# ============================================================
-# MAIN CONTENT HEADER (CLEAN WHITE CARD)
-# ============================================================
-st.markdown("""
-    <div class="header-container">
-        <div class="main-title">Glass PI Verification System</div>
-        <div class="main-subtitle">Automated BOQ vs PI Data Matching & Reconciliation</div>
+    .main .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+        max-width: 98%;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    .quick-guide-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        margin-top: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .quick-guide-step {
+        font-size: 13px;
+        color: #475569;
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .hero-container {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px 30px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .hero-title-text {
+        font-size: 22px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .hero-sub-text {
+        font-size: 13px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .step-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* PRIMARY BLUE BUTTON - COMPACT & NORMAL FONT WEIGHT */
+    div.stButton > button[kind="primary"] {
+        background-color: #2563eb !important;
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #1d4ed8 !important;
+        background: #1d4ed8 !important;
+    }
+
+    /* SECONDARY RED BUTTON - COMPACT & NORMAL FONT WEIGHT */
+    div.stButton > button[kind="secondary"] {
+        background-color: #dc2626 !important;
+        background: #dc2626 !important;
+        border: 1px solid #dc2626 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2) !important;
+    }
+    div.stButton > button[kind="secondary"]:hover {
+        background-color: #b91c1c !important;
+        background: #b91c1c !important;
+    }
+
+    /* FORCE NORMAL WEIGHT (NOT BOLD) & WHITE TEXT */
+    div.stButton > button p, div.stButton > button span {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+def get_image_path(filename):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, filename)
+    return os.path.join(os.path.abspath("."), filename)
+
+# =========================================================
+# SIDEBAR STRUCTURE MATCH
+# =========================================================
+with st.sidebar:
+    logo_file = get_image_path("logo.png")
+    if os.path.exists(logo_file):
+        col_s1, col_s2, col_s3 = st.columns([1, 2, 1])
+        with col_s2:
+            st.image(Image.open(logo_file), width=110)
+    else:
+        st.markdown("<h2 style='text-align: center; color:#1e293b;'><b>win square</b></h2>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("<div class='quick-guide-title'>💡 Quick Guide</div>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class='quick-guide-step'><b>1.</b> Upload Excel BOQ file(s) in Step 1.</div>
+        <div class='quick-guide-step'><b>2.</b> Click <b>Extract Excel Data</b>.</div>
+        <div class='quick-guide-step'><b>3.</b> Upload PI PDF file(s) in Step 2.</div>
+        <div class='quick-guide-step'><b>4.</b> Click <b>Extract PDF Data</b>.</div>
+        <div class='quick-guide-step'><b>5.</b> Run <b>Verify Data</b> to view mismatch analytics.</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+# =========================================================
+# HEADER HERO BANNER
+# =========================================================
+st.markdown(
+    """
+    <div class="hero-container">
+        <div>
+            <div class="hero-title-text">Glass PI Verification System</div>
+            <div class="hero-sub-text">Automated BOQ vs PI Data Matching & Reconciliation</div>
+        </div>
     </div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 # ============================================================
 # STEP 1 : Extract Data From Excel Sheets
 # ============================================================
-st.markdown('<div class="step-heading">📂 Step 1: Upload BOQ Excel Files</div>', unsafe_allow_html=True)
+st.markdown("<div class='step-title'>📂 Step 1: Upload BOQ Excel Files</div>", unsafe_allow_html=True)
 
 uploaded_excel_files = st.file_uploader(
     "Upload Excel File(s) (.xlsx, .xls)",
@@ -218,15 +248,15 @@ uploaded_excel_files = st.file_uploader(
     label_visibility="collapsed"
 )
 
-st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-col_ex1, col_ex2, _ = st.columns([0.18, 0.14, 0.68])
+col_ex1, col_ex2, _ = st.columns([1, 1, 6])
 
 with col_ex1:
-    btn_extract_ex = st.button("🔗 Extract Excel Data", type="primary", use_container_width=True)
+    btn_extract_ex = st.button("🔗 Extract Excel Data", type="primary", use_container_width=False)
 
 with col_ex2:
-    btn_reset_ex = st.button("🗑️ Reset Excel", type="secondary", use_container_width=True)
+    btn_reset_ex = st.button("🗑️ Reset Excel", type="secondary", use_container_width=False)
 
 if btn_extract_ex:
     if uploaded_excel_files:
@@ -234,7 +264,7 @@ if btn_extract_ex:
             excel_df = process_uploaded_files(uploaded_excel_files)
             if excel_df is not None and not excel_df.empty:
                 st.session_state["excel_df"] = excel_df
-                st.success(f"Successfully extracted {len(excel_df)} rows from Excel!")
+                st.toast(f"Successfully extracted {len(excel_df)} rows from Excel!", icon="✅")
             else:
                 st.error("Could not extract valid data from Excel file(s).")
     else:
@@ -250,12 +280,12 @@ if "excel_df" in st.session_state and not st.session_state["excel_df"].empty:
     with st.expander("📄 View Extracted Excel BOQ Data", expanded=False):
         st.dataframe(st.session_state["excel_df"], use_container_width=True)
 
-st.divider()
+st.markdown("---")
 
 # ============================================================
 # STEP 2 : Extract Data From PI PDF Files
 # ============================================================
-st.markdown('<div class="step-heading">📂 Step 2: Upload PI PDF Files</div>', unsafe_allow_html=True)
+st.markdown("<div class='step-title'>📂 Step 2: Upload PI PDF Files</div>", unsafe_allow_html=True)
 
 uploaded_pdf_files = st.file_uploader(
     "Upload PI PDF File(s)",
@@ -265,15 +295,15 @@ uploaded_pdf_files = st.file_uploader(
     label_visibility="collapsed"
 )
 
-st.markdown("<div style='margin-top: 12px;'></div>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-col_pdf1, col_pdf2, _ = st.columns([0.18, 0.14, 0.68])
+col_pdf1, col_pdf2, _ = st.columns([1, 1, 6])
 
 with col_pdf1:
-    btn_extract_pdf = st.button("🔍 Extract PDF Data", type="primary", use_container_width=True)
+    btn_extract_pdf = st.button("🔍 Extract PDF Data", type="primary", use_container_width=False)
 
 with col_pdf2:
-    btn_reset_pdf = st.button("🗑️ Reset PDF", type="secondary", use_container_width=True)
+    btn_reset_pdf = st.button("🗑️ Reset PDF", type="secondary", use_container_width=False)
 
 if btn_extract_pdf:
     if uploaded_pdf_files:
@@ -295,7 +325,7 @@ if btn_extract_pdf:
         if pdf_dfs:
             combined_pdf_df = pd.concat(pdf_dfs, ignore_index=True)
             st.session_state["pdf_df"] = combined_pdf_df
-            st.success(f"Successfully extracted {len(combined_pdf_df)} rows from PDF(s)!")
+            st.toast(f"Successfully extracted {len(combined_pdf_df)} rows from PDF(s)!", icon="✅")
         else:
             st.error("Could not extract valid data from PDF file(s).")
     else:
@@ -311,12 +341,12 @@ if "pdf_df" in st.session_state and not st.session_state["pdf_df"].empty:
     with st.expander("📄 View Extracted PDF Data", expanded=False):
         st.dataframe(st.session_state["pdf_df"], use_container_width=True)
 
-st.divider()
+st.markdown("---")
 
 # ============================================================
-# STEP 3 : Verify PDF Data Against Excel BOQ
+# STEP 3 : Verify Data & Matching
 # ============================================================
-st.markdown('<div class="step-heading">📂 Step 3: Verify Data & Run Matching</div>', unsafe_allow_html=True)
+st.markdown("<div class='step-title'>📂 Step 3: Verify Data & Run Matching</div>", unsafe_allow_html=True)
 
 excel_ready = "excel_df" in st.session_state and not st.session_state["excel_df"].empty
 pdf_ready = "pdf_df" in st.session_state and not st.session_state["pdf_df"].empty
@@ -324,9 +354,9 @@ pdf_ready = "pdf_df" in st.session_state and not st.session_state["pdf_df"].empt
 if not excel_ready or not pdf_ready:
     st.info("💡 Please extract data from Step 1 (Excel) and Step 2 (PDF) first.")
 else:
-    col_v1, _ = st.columns([0.18, 0.82])
+    col_v1, _ = st.columns([1, 7])
     with col_v1:
-        btn_verify = st.button("⚡ Run Verification", type="primary", use_container_width=True)
+        btn_verify = st.button("⚡ Run Verification", type="primary", use_container_width=False)
     
     if btn_verify:
         with st.spinner("Matching and Verifying Data..."):
@@ -343,11 +373,7 @@ if 'verification_df' in st.session_state and not st.session_state["verification_
     df_res = st.session_state["verification_df"]
 
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-        <h4 style="color: #0f172a; font-weight: 700; margin-bottom: 16px;">
-            📊 Verification Summary & Analytics
-        </h4>
-    """, unsafe_allow_html=True)
+    st.markdown("<div class='step-title'>📊 Verification Summary & Analytics</div>", unsafe_allow_html=True)
 
     total_items = len(df_res)
     exact_matches = len(df_res[df_res["Verification Status"] == "✅ MATCHED"])
@@ -360,7 +386,7 @@ if 'verification_df' in st.session_state and not st.session_state["verification_
         st.markdown(f"""
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px;">
                 <p style="color: #64748b; font-size: 11px; font-weight: 700; margin: 0; text-transform: uppercase;">TOTAL BOQ ITEMS</p>
-                <h3 style="color: #0f172a; font-size: 26px; font-weight: 800; margin: 4px 0 0 0;">{total_items}</h3>
+                <h3 style="color: #0f172a; font-size: 24px; font-weight: 800; margin: 4px 0 0 0;">{total_items}</h3>
             </div>
         """, unsafe_allow_html=True)
 
@@ -369,7 +395,7 @@ if 'verification_df' in st.session_state and not st.session_state["verification_
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px;">
                 <p style="color: #166534; font-size: 11px; font-weight: 700; margin: 0; text-transform: uppercase;">EXACT MATCHES</p>
                 <div style="display: flex; align-items: baseline; gap: 8px;">
-                    <h3 style="color: #15803d; font-size: 26px; font-weight: 800; margin: 4px 0 0 0;">{exact_matches}</h3>
+                    <h3 style="color: #15803d; font-size: 24px; font-weight: 800; margin: 4px 0 0 0;">{exact_matches}</h3>
                     <span style="color: #166534; font-weight: 700; font-size: 12px;">↑ {match_percentage:.1f}%</span>
                 </div>
             </div>
@@ -384,7 +410,7 @@ if 'verification_df' in st.session_state and not st.session_state["verification_
         st.markdown(f"""
             <div style="background: {bg_color}; border: 1px solid {border_color}; border-radius: 8px; padding: 14px 18px;">
                 <p style="color: {text_color}; font-size: 11px; font-weight: 700; margin: 0; text-transform: uppercase;">MISMATCHES / MISSING</p>
-                <h3 style="color: {num_color}; font-size: 26px; font-weight: 800; margin: 4px 0 0 0;">{mismatches}</h3>
+                <h3 style="color: {num_color}; font-size: 24px; font-weight: 800; margin: 4px 0 0 0;">{mismatches}</h3>
             </div>
         """, unsafe_allow_html=True)
 
@@ -457,7 +483,7 @@ if 'verification_df' in st.session_state and not st.session_state["verification_
 
     # Detailed Table Section
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("<h4 style='color: #0f172a; font-weight: 700;'>📑 Detailed Verification Results</h4>", unsafe_allow_html=True)
+    st.markdown("<div class='step-title'>📑 Detailed Verification Results</div>", unsafe_allow_html=True)
     
     col_f1, _ = st.columns([2, 3])
     with col_f1:
