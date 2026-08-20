@@ -32,7 +32,7 @@ def get_base64_image(image_path: str) -> str | None:
 logo_b64 = get_base64_image("logo.png")
 
 # ============================================================
-# CUSTOM CLEAN UI CSS (MATCHING REQUIREMENT SHEET ENGINE)
+# CUSTOM CLEAN UI CSS & BUTTON STYLING
 # ============================================================
 st.markdown("""
     <style>
@@ -50,7 +50,7 @@ st.markdown("""
         border: 1px solid #e2e8f0;
         border-radius: 12px;
         padding: 24px 32px;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
@@ -58,7 +58,7 @@ st.markdown("""
         color: #0f172a !important;
         font-size: 22px !important;
         font-weight: 800 !important;
-        margin: 0 0 6px 0 !important;
+        margin: 0 0 4px 0 !important;
         letter-spacing: -0.3px;
     }
 
@@ -71,40 +71,57 @@ st.markdown("""
 
     /* Step Titles */
     .step-heading {
-        color: #0f172a;
-        font-size: 15px;
-        font-weight: 700;
-        margin-top: 10px;
+        color: #1e293b;
+        font-size: 15px !important;
+        font-weight: 700 !important;
         margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
-    /* Button Styling */
-    div.stButton > button {
+    /* FORCE BLUE BUTTON (PRIMARY TYPE) */
+    .stButton > button[kind="primary"] {
+        background-color: #2563eb !important;
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
         border-radius: 6px !important;
-        font-weight: 600 !important;
-        font-size: 13px !important;
-        padding: 0.5rem 1.25rem !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
         white-space: nowrap !important;
     }
-
-    div.stButton > button[kind="primary"] {
-        background: #2563eb !important;
-        border: none !important;
-        color: #ffffff !important;
+    .stButton > button[kind="primary"]:hover {
+        background-color: #1d4ed8 !important;
+        background: #1d4ed8 !important;
     }
 
-    div.stButton > button[kind="primary"]:hover {
-        background: #1d4ed8 !important;
+    /* FORCE RED BUTTON (SECONDARY TYPE OVERRIDE) */
+    .stButton > button[kind="secondary"] {
+        background-color: #dc2626 !important;
+        background: #dc2626 !important;
+        border: 1px solid #dc2626 !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2) !important;
+        white-space: nowrap !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background-color: #b91c1c !important;
+        background: #b91c1c !important;
+    }
+
+    .stButton > button p, .stButton > button span {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
     }
 
     /* Sidebar Logo & Quick Guide */
     .sidebar-logo {
-        width: 140px;
+        width: 120px;
         height: auto;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         object-fit: contain;
     }
 
@@ -140,15 +157,15 @@ with st.sidebar:
     if logo_b64:
         st.markdown(f'<img src="data:image/png;base64,{logo_b64}" class="sidebar-logo">', unsafe_allow_html=True)
     else:
-        st.markdown("<h2 style='color:#0f172a; font-weight:800;'>WinSquare</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#0f172a; font-weight:800;'>win square</h2>", unsafe_allow_html=True)
     
     st.divider()
     st.markdown('<div class="guide-title">💡 Quick Guide</div>', unsafe_allow_html=True)
     st.markdown("""
         <div class="guide-step"><b>1.</b> Upload Excel BOQ file(s) in Step 1.</div>
-        <div class="guide-step"><b>2.</b> Click <b>Extract Excel</b> to parse items.</div>
-        <div class="guide-step"><b>3.</b> Upload Proforma Invoice (PI) PDF file(s) in Step 2.</div>
-        <div class="guide-step"><b>4.</b> Click <b>Extract PDF</b>.</div>
+        <div class="guide-step"><b>2.</b> Click <b>Extract Excel Data</b>.</div>
+        <div class="guide-step"><b>3.</b> Upload PI PDF file(s) in Step 2.</div>
+        <div class="guide-step"><b>4.</b> Click <b>Extract PDF Data</b>.</div>
         <div class="guide-step"><b>5.</b> Run <b>Verify Data</b> to view mismatch analytics.</div>
     """, unsafe_allow_html=True)
 
@@ -175,27 +192,34 @@ uploaded_excel_files = st.file_uploader(
     label_visibility="collapsed"
 )
 
-col_ex1, col_ex2, _ = st.columns([0.18, 0.18, 0.64])
+st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+
+# COMPACT COLUMN RATIO FOR BUTTONS
+col_ex1, col_ex2, _ = st.columns([1.3, 1.1, 7.6])
 
 with col_ex1:
-    if st.button("🔗 Extract Excel Data", type="primary", use_container_width=True):
-        if uploaded_excel_files:
-            with st.spinner("Extracting Excel BOQ Data..."):
-                excel_df = process_uploaded_files(uploaded_excel_files)
-                if excel_df is not None and not excel_df.empty:
-                    st.session_state["excel_df"] = excel_df
-                    st.success(f"Successfully extracted {len(excel_df)} rows from Excel!")
-                else:
-                    st.error("Could not extract valid data from Excel file(s).")
-        else:
-            st.warning("Please upload Excel file(s) first.")
+    btn_extract_ex = st.button("🔗 Extract Excel Data", type="primary", use_container_width=True)
 
 with col_ex2:
-    if st.button("🗑️ Reset Excel", use_container_width=True):
-        st.session_state["excel_uploader_key"] += 1
-        st.session_state.pop("excel_df", None)
-        st.session_state.pop("verification_df", None)
-        st.rerun()
+    btn_reset_ex = st.button("🗑️ Reset Excel", type="secondary", use_container_width=True)
+
+if btn_extract_ex:
+    if uploaded_excel_files:
+        with st.spinner("Extracting Excel BOQ Data..."):
+            excel_df = process_uploaded_files(uploaded_excel_files)
+            if excel_df is not None and not excel_df.empty:
+                st.session_state["excel_df"] = excel_df
+                st.success(f"Successfully extracted {len(excel_df)} rows from Excel!")
+            else:
+                st.error("Could not extract valid data from Excel file(s).")
+    else:
+        st.warning("Please upload Excel file(s) first.")
+
+if btn_reset_ex:
+    st.session_state["excel_uploader_key"] += 1
+    st.session_state.pop("excel_df", None)
+    st.session_state.pop("verification_df", None)
+    st.rerun()
 
 if "excel_df" in st.session_state and not st.session_state["excel_df"].empty:
     with st.expander("📄 View Extracted Excel BOQ Data", expanded=False):
@@ -216,41 +240,48 @@ uploaded_pdf_files = st.file_uploader(
     label_visibility="collapsed"
 )
 
-col_pdf1, col_pdf2, _ = st.columns([0.18, 0.18, 0.64])
+st.markdown("<div style='margin-top: 15px;'></div>", unsafe_allow_html=True)
+
+# COMPACT COLUMN RATIO FOR BUTTONS
+col_pdf1, col_pdf2, _ = st.columns([1.3, 1.1, 7.6])
 
 with col_pdf1:
-    if st.button("🔍 Extract PDF Data", type="primary", use_container_width=True):
-        if uploaded_pdf_files:
-            pdf_dfs = []
-            with st.spinner("Extracting Data from PDF(s)..."):
-                for pdf_file in uploaded_pdf_files:
-                    temp_path = f"temp_{pdf_file.name}"
-                    try:
-                        with open(temp_path, "wb") as f:
-                            f.write(pdf_file.getbuffer())
-                        
-                        df_pdf = read_pdf(temp_path)
-                        if df_pdf is not None and not df_pdf.empty:
-                            pdf_dfs.append(df_pdf)
-                    finally:
-                        if os.path.exists(temp_path):
-                            os.remove(temp_path)
-
-            if pdf_dfs:
-                combined_pdf_df = pd.concat(pdf_dfs, ignore_index=True)
-                st.session_state["pdf_df"] = combined_pdf_df
-                st.success(f"Successfully extracted {len(combined_pdf_df)} rows from PDF(s)!")
-            else:
-                st.error("Could not extract valid data from PDF file(s).")
-        else:
-            st.warning("Please upload PDF file(s) first.")
+    btn_extract_pdf = st.button("🔍 Extract PDF Data", type="primary", use_container_width=True)
 
 with col_pdf2:
-    if st.button("🗑️ Reset PDF", use_container_width=True):
-        st.session_state["pdf_uploader_key"] += 1
-        st.session_state.pop("pdf_df", None)
-        st.session_state.pop("verification_df", None)
-        st.rerun()
+    btn_reset_pdf = st.button("🗑️ Reset PDF", type="secondary", use_container_width=True)
+
+if btn_extract_pdf:
+    if uploaded_pdf_files:
+        pdf_dfs = []
+        with st.spinner("Extracting Data from PDF(s)..."):
+            for pdf_file in uploaded_pdf_files:
+                temp_path = f"temp_{pdf_file.name}"
+                try:
+                    with open(temp_path, "wb") as f:
+                        f.write(pdf_file.getbuffer())
+                    
+                    df_pdf = read_pdf(temp_path)
+                    if df_pdf is not None and not df_pdf.empty:
+                        pdf_dfs.append(df_pdf)
+                finally:
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+
+        if pdf_dfs:
+            combined_pdf_df = pd.concat(pdf_dfs, ignore_index=True)
+            st.session_state["pdf_df"] = combined_pdf_df
+            st.success(f"Successfully extracted {len(combined_pdf_df)} rows from PDF(s)!")
+        else:
+            st.error("Could not extract valid data from PDF file(s).")
+    else:
+        st.warning("Please upload PDF file(s) first.")
+
+if btn_reset_pdf:
+    st.session_state["pdf_uploader_key"] += 1
+    st.session_state.pop("pdf_df", None)
+    st.session_state.pop("verification_df", None)
+    st.rerun()
 
 if "pdf_df" in st.session_state and not st.session_state["pdf_df"].empty:
     with st.expander("📄 View Extracted PDF Data", expanded=False):
@@ -269,7 +300,7 @@ pdf_ready = "pdf_df" in st.session_state and not st.session_state["pdf_df"].empt
 if not excel_ready or not pdf_ready:
     st.info("💡 Please extract data from Step 1 (Excel) and Step 2 (PDF) first.")
 else:
-    col_v1, _ = st.columns([0.22, 0.78])
+    col_v1, _ = st.columns([1.5, 8.5])
     with col_v1:
         if st.button("⚡ Run Verification", type="primary", use_container_width=True):
             with st.spinner("Matching and Verifying Data..."):
