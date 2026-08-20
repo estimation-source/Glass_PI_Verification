@@ -117,7 +117,7 @@ st.markdown("""
         font-size: 14px !important;
     }
 
-    /* SIDEBAR LOGO CONTAINER & ADJUSTMENTS */
+    /* SIDEBAR CURVED LOGO CARD STYLING */
     .logo-container {
         display: flex;
         justify-content: center;
@@ -127,9 +127,12 @@ st.markdown("""
     }
 
     .sidebar-logo {
-        width: 110px;
-        max-width: 100%;
+        width: 120px;
         height: auto;
+        border-radius: 14px !important; /* कर्व्ड कोपरे करण्यासाठी */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* हलका शॅडो */
+        padding: 8px;
+        background-color: #ffffff; /* पांढरा बॅकग्राउंड कार्ड */
         object-fit: contain;
     }
 
